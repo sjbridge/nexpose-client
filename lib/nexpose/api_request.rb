@@ -19,12 +19,15 @@ module Nexpose
 
     attr_reader :trust_store
 
-    def initialize(req, url, api_version = '1.1', trust_store = nil)
+    attr_reader :connect_host
+
+    def initialize(req, url, api_version = '1.1', trust_store = nil, connect_host = nil)
       @url = url
       @req = req
       @api_version = api_version
       @url = @url.sub('API_VERSION', @api_version)
       @trust_store = trust_store
+      @connect_host = connect_host
       prepare_http_client
     end
 
@@ -32,6 +35,7 @@ module Nexpose
       @uri = URI.parse(@url)
       @http = Net::HTTP.new(@uri.host, @uri.port)
       @http.use_ssl = true
+      @http.ipaddr=@connect_host
       #
       # XXX: This is obviously a security issue, however, we handle this at the client level by forcing
       #      a confirmation when the nexpose host is not localhost. In a perfect world, we would present

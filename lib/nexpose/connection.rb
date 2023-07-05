@@ -66,6 +66,8 @@ module Nexpose
     # http://ruby-doc.org/stdlib/libdoc/net/http/rdoc/Net/HTTP.html#open_timeout-attribute-method
     attr_accessor :open_timeout
 
+    attr_accessor :connect_host
+
     # A constructor to load a Connection object from a URI
     def self.from_uri(uri, user, pass, silo_id = nil, token = nil, trust_cert = nil)
       uri = URI.parse(uri)
@@ -81,7 +83,7 @@ module Nexpose
     # @param [String] silo_id The silo identifier for Nexpose sessions.
     # @param [String] token The two-factor authentication (2FA) token for Nexpose sessions.
     # @param [String] trust_cert The PEM-formatted web certificate of the Nexpose console. Used for SSL validation.
-    def initialize(ip, user, pass, port = 3780, silo_id = nil, token = nil, trust_cert = nil)
+    def initialize(ip, user, pass, port = 3780, silo_id = nil, token = nil, trust_cert = nil, sni_connect_host = nil)
       @host         = ip
       @username     = user
       @password     = pass
@@ -93,6 +95,7 @@ module Nexpose
       @url          = "https://#{@host}:#{@port}/api/API_VERSION/xml"
       @timeout      = 120
       @open_timeout = 120
+      @connect_host = sni_connect_host
     end
 
     # Establish a new connection and Session ID
@@ -121,7 +124,7 @@ module Nexpose
       options.store(:open_timeout, @open_timeout)
       @request_xml = xml.to_s
       @api_version = version
-      response = APIRequest.execute(@url, @request_xml, @api_version, options, @trust_store)
+      response = APIRequest.execute(@url, @request_xml, @api_version, options, @trust_store, @connect_host)
       @response_xml = response.raw_response_data
       response
     end
